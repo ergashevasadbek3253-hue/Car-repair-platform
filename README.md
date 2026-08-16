@@ -23,3 +23,6 @@ Our goal is to make car repair faster, easier and more accessible.
 ## 📌 Project Status
 
 🚧 Currently under development.
+## 🔧 Mechanic Search
+
+Users will be able to find available mechanics based on their location and car type.
