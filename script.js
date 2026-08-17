@@ -87,8 +87,60 @@ function searchMechanics() {
                         </p>
                     </div>
 
-                    <button onclick="contactMechanic('${mechanic.name}')">
-                        Contact
+                    <button> function contactMechanic(name) {
+    const mechanic = mechanics.find(item => item.name === name);
+
+    if (!mechanic) {
+        return;
+    }
+
+    const result = document.querySelector("#search-result");
+
+    result.innerHTML = `
+        <div class="profile-overlay">
+
+            <div class="mechanic-profile">
+
+                <button class="close-profile"
+                    onclick="searchMechanics()">
+                    ✕
+                </button>
+
+                <div class="profile-icon">
+                    ${mechanic.image}
+                </div>
+
+                <h2>${mechanic.name}</h2>
+
+                <p class="verified">✓ Verified Mechanic</p>
+
+                <div class="profile-details">
+                    <p>📍 ${mechanic.location}</p>
+                    <p>⭐ ${mechanic.rating}/5 rating</p>
+                    <p>🚗 ${mechanic.cars.join(", ")}</p>
+                    <p>💰 ${mechanic.price} / consultation</p>
+                    <p>
+                        ${mechanic.status === "Available now"
+                            ? "🟢 Available now"
+                            : "🟠 Currently busy"}
+                    </p>
+                </div>
+
+                <button onclick="startConsultation('${mechanic.name}')">
+                    📹 Start Video Consultation
+                </button>
+
+            </div>
+
+        </div>
+    `;
+}
+
+function startConsultation(name) {
+    alert(
+        `Video consultation with ${name} will be available soon.`
+    );
+}
                     </button>
 
                 </div>
