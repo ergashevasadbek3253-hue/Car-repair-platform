@@ -29,11 +29,12 @@
     <div class="search-box">
 
         <input
-            type="text"
-            placeholder="📍 Enter your location"
-        >
+    id="location"
+    type="text"
+    placeholder="📍 Enter your location"
+>
 
-        <select>
+        <select id="car">
             <option>Select your car</option>
             <option>BMW</option>
             <option>Mercedes-Benz</option>
@@ -43,7 +44,7 @@
             <option>Other</option>
         </select>
 
-        <button>Search Mechanics</button>
+        <button onclick="searchMechanics()">Search Mechanics</button>
 
     </div>
 
@@ -159,6 +160,6 @@
         <p>Making car repair easier, faster and smarter.</p>
         <p>© 2026 Car Repair Platform</p>
     </footer>
-
+<script src="script.js"></script>
 </body>
 </html>
