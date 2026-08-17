@@ -152,3 +152,73 @@ function startConsultation(name) {
 function contactMechanic(name) {
     alert(`You selected ${name}. Contact feature will be added soon!`);
 }
+function showRegistration() {
+    const result = document.querySelector("#search-result");
+
+    result.innerHTML = `
+        <div class="registration-form">
+
+            <button class="close-profile"
+                onclick="searchMechanics()">
+                ✕
+            </button>
+
+            <h2>🔧 Mechanic Registration</h2>
+
+            <p>Join CARFIX and start helping drivers.</p>
+
+            <input
+                id="mechanic-name"
+                type="text"
+                placeholder="👤 Your name"
+            >
+
+            <input
+                id="mechanic-location"
+                type="text"
+                placeholder="📍 Your location"
+            >
+
+            <input
+                id="mechanic-phone"
+                type="tel"
+                placeholder="📞 Phone number"
+            >
+
+            <input
+                id="mechanic-price"
+                type="number"
+                placeholder="💰 Consultation price (€)"
+            >
+
+            <input
+                id="mechanic-experience"
+                type="number"
+                placeholder="🛠️ Years of experience"
+            >
+
+            <button onclick="registerMechanic()">
+                Create Mechanic Profile
+            </button>
+
+        </div>
+    `;
+}
+
+function registerMechanic() {
+    const name = document.querySelector("#mechanic-name").value;
+    const location = document.querySelector("#mechanic-location").value;
+    const phone = document.querySelector("#mechanic-phone").value;
+    const price = document.querySelector("#mechanic-price").value;
+    const experience = document.querySelector("#mechanic-experience").value;
+
+    if (!name || !location || !phone || !price || !experience) {
+        alert("⚠️ Please fill in all fields.");
+        return;
+    }
+
+    alert(
+        `🎉 Welcome to CARFIX, ${name}!\n\n` +
+        `Your mechanic profile has been created.`
+    );
+}
