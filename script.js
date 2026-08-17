@@ -33,7 +33,7 @@ function searchMechanics() {
     const car = document.querySelector("#car").value;
     const result = document.querySelector("#search-result");
 
-    if (location === "" || car === "" || car === "Select your car") {
+    if (location === "" || car === "") {
         result.innerHTML = `
             <div class="error-message">
                 ⚠️ Please enter your location and select your car.
@@ -62,32 +62,52 @@ function searchMechanics() {
         </div>
 
         <div class="mechanic-results">
-            ${matches.map(mechanic => `
-                <div class="mechanic-card">
+            ${matches.map(mechanic => {
+                // escape single quotes in names so onclick string stays valid
+                const safeName = mechanic.name.replace(/'/g, "\\'");
+                return `
+                    <div class="mechanic-card">
 
-                    <div class="mechanic-icon">
-                        ${mechanic.image}
+                        <div class="mechanic-icon">
+                            ${mechanic.image}
+                        </div>
+
+                        <div class="mechanic-info">
+                            <h3>${mechanic.name}</h3>
+
+                            <p>📍 ${mechanic.location}</p>
+
+                            <p>⭐ ${mechanic.rating}/5</p>
+
+                            <p>🚗 ${mechanic.cars.join(", ")}</p>
+
+                            <p>💰 ${mechanic.price} / consultation</p>
+
+                            <p class="status">
+                                ${mechanic.status === "Available now"
+                                    ? "🟢 Available now"
+                                    : "🟠 Currently busy"}
+                            </p>
+                        </div>
+
+                        <div class="mechanic-actions">
+                            <button onclick="contactMechanic('${safeName}')">
+                                📞 Contact
+                            </button>
+
+                            <button onclick="startConsultation('${safeName}')">
+                                📹 Start Video Consultation
+                            </button>
+                        </div>
+
                     </div>
+                `;
+            }).join("")}
+        </div>
+    `;
+}
 
-                    <div class="mechanic-info">
-                        <h3>${mechanic.name}</h3>
-
-                        <p>📍 ${mechanic.location}</p>
-
-                        <p>⭐ ${mechanic.rating}/5</p>
-
-                        <p>🚗 ${mechanic.cars.join(", ")}</p>
-
-                        <p>💰 ${mechanic.price} / consultation</p>
-
-                        <p class="status">
-                            ${mechanic.status === "Available now"
-                                ? "🟢 Available now"
-                                : "🟠 Currently busy"}
-                        </p>
-                    </div>
-
-                    <button> function contactMechanic(name) {
+function contactMechanic(name) {
     const mechanic = mechanics.find(item => item.name === name);
 
     if (!mechanic) {
@@ -126,7 +146,7 @@ function searchMechanics() {
                     </p>
                 </div>
 
-                <button onclick="startConsultation('${mechanic.name}')">
+                <button onclick="startConsultation('${mechanic.name.replace(/'/g, "\\'")}')">
                     📹 Start Video Consultation
                 </button>
 
@@ -141,17 +161,7 @@ function startConsultation(name) {
         `Video consultation with ${name} will be available soon.`
     );
 }
-                    </button>
 
-                </div>
-            `).join("")}
-        </div>
-    `;
-}
-
-function contactMechanic(name) {
-    alert(`You selected ${name}. Contact feature will be added soon!`);
-}
 function showRegistration() {
     const result = document.querySelector("#search-result");
 
