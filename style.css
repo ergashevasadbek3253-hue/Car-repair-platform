@@ -232,3 +232,118 @@ footer p {
         padding: 60px 5%;
     }
 }
+
+
+/* MECHANIC SEARCH */
+
+.mechanic-search {
+    padding: 80px 8%;
+    text-align: center;
+    background: #f5f7fb;
+}
+
+.mechanic-search h2 {
+    font-size: 38px;
+    margin-bottom: 10px;
+}
+
+.mechanic-search > p {
+    color: #64748b;
+    margin-bottom: 35px;
+}
+
+.search-box {
+    max-width: 800px;
+    margin: 0 auto 50px;
+    padding: 25px;
+    background: white;
+    border-radius: 16px;
+    display: flex;
+    gap: 12px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+}
+
+.search-box input,
+.search-box select {
+    flex: 1;
+    padding: 15px;
+    border: 1px solid #dbe1ea;
+    border-radius: 10px;
+    font-size: 16px;
+}
+
+.results-header {
+    margin-bottom: 25px;
+}
+
+.results-header p {
+    color: #64748b;
+}
+
+.mechanic-results {
+    max-width: 1000px;
+    margin: auto;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+}
+
+.mechanic-card {
+    background: white;
+    padding: 25px;
+    border-radius: 18px;
+    text-align: left;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.06);
+}
+
+.mechanic-icon {
+    width: 65px;
+    height: 65px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #eef4ff;
+    border-radius: 50%;
+    font-size: 32px;
+    margin-bottom: 15px;
+}
+
+.mechanic-info h3 {
+    font-size: 22px;
+    margin-bottom: 10px;
+}
+
+.mechanic-info p {
+    color: #64748b;
+    margin: 6px 0;
+}
+
+.mechanic-card button {
+    width: 100%;
+    margin-top: 15px;
+}
+
+.status {
+    font-weight: bold;
+}
+
+.error-message {
+    max-width: 600px;
+    margin: auto;
+    padding: 20px;
+    background: white;
+    border-radius: 12px;
+    color: #dc2626;
+}
+
+@media (max-width: 800px) {
+
+    .search-box {
+        flex-direction: column;
+    }
+
+    .mechanic-results {
+        grid-template-columns: 1fr;
+    }
+    }
