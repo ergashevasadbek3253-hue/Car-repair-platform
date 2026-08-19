@@ -1,3 +1,10 @@
+const SUPABASE_URL = "https://qzqibfgyqwrhjrgiyumg.supabase.co";
+const SUPABASE_KEY = "sb_publishable_T0ydZcimtvIMUK29FuGb2g_VX5dUmpv";
+
+const supabaseClient = supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY
+);
 const mechanics = [
     {
         name: "Alex",
@@ -232,3 +239,20 @@ function registerMechanic() {
         `Your mechanic profile has been created.`
     );
 }
+async function testSupabase() {
+    const { data, error } = await supabaseClient
+        .from("mechanics")
+        .select("*")
+        .limit(1);
+
+    if (error) {
+        console.error("Supabase error:", error);
+        alert("❌ Supabase ulanishida xato");
+        return;
+    }
+
+    console.log("Supabase connected:", data);
+    alert("✅ Supabase muvaffaqiyatli ulandi!");
+}
+
+testSupabase();
