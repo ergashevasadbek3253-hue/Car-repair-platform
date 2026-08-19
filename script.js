@@ -36,41 +36,51 @@ const mechanics = [
 ];
 
 async function registerMechanic() {
-    const name = document.getElementById("mechanic-name").value;
-    const location = document.getElementById("mechanic-location").value;
-    const car = document.getElementById("mechanic-car").value;
-    const price = document.getElementById("mechanic-price").value;
-    const experience = document.getElementById("mechanic-experience").value;
-    const phone = document.getElementById("mechanic-phone").value;
+    const name = document.getElementById("mechanic-name")?.value?.trim();
+    const location = document.getElementById("mechanic-location")?.value?.trim();
+    // mechanic-car input is added to the registration form; fall back to Other if missing
+    const carElem = document.getElementById("mechanic-car");
+    const car = carElem ? carElem.value : "Other";
+    const price = document.getElementById("mechanic-price")?.value;
+    const experience = document.getElementById("mechanic-experience")?.value;
+    const phone = document.getElementById("mechanic-phone")?.value?.trim();
 
     if (!name || !location || !car) {
         alert("❌ Please fill in the required fields");
         return;
     }
 
-    const { data, error } = await supabaseClient
-        .from("Mechanic")
-        .insert([
-            {
-                name: name,
-                location: location,
-                car: car,
-                price: Number(price) || 0,
-                experience: Number(experience) || 0,
-                phone: phone
-            }
-        ])
-        .select();
+    try {
+        const { data, error, status } = await supabaseClient
+            .from("mechanics") // ensure table name matches your Supabase table (lowercase)
+            .insert([
+                {
+                    name: name,
+                    location: location,
+                    car: car,
+                    price: Number(price) || 0,
+                    experience: Number(experience) || 0,
+                    phone: phone
+                }
+            ])
+            .select();
 
-    if (error) {
-        console.error(error);
-        alert("❌ Mechanic saqlanmadi: " + error.message);
-        return;
+        if (error) {
+            console.error("Supabase insert error:", error, "status:", status);
+            alert("❌ Mechanic not saved: " + (error.message || JSON.stringify(error)));
+            return;
+        }
+
+        alert("✅ Mechanic successfully added!");
+
+        console.log("New mechanic:", data);
+
+        // After successful registration, refresh the search results (if any)
+        searchMechanics();
+    } catch (err) {
+        console.error("Unexpected error inserting mechanic:", err);
+        alert("❌ Unexpected error: " + err.message);
     }
-
-    alert("✅ Mechanic muvaffaqiyatli qo‘shildi!");
-
-    console.log("New mechanic:", data);
 }
 
 function searchMechanics() {
@@ -238,6 +248,16 @@ function showRegistration() {
                 placeholder="📞 Phone number"
             >
 
+            <select id="mechanic-car">
+                <option value="">Select your car specialties</option>
+                <option>BMW</option>
+                <option>Mercedes-Benz</option>
+                <option>Volkswagen</option>
+                <option>Toyota</option>
+                <option>Ford</option>
+                <option>Other</option>
+            </select>
+
             <input
                 id="mechanic-price"
                 type="number"
@@ -266,14 +286,20 @@ async function testSupabase() {
 
     if (error) {
         console.error("Supabase error:", error);
-        alert("❌ Supabase ulanishida xato");
+        alert("❌ Supabase connection error");
         return;
     }
 
     console.log("Supabase connected:", data);
-    alert("✅ Supabase muvaffaqiyatli ulandi!");
+    // only alert for debugging; remove in production
+    alert("✅ Supabase connected successfully!");
 }
 
 // keep the single async registerMechanic above (which inserts into Supabase)
 
-testSupabase();
+// Run a quick supabase connectivity test
+try {
+    testSupabase();
+} catch (err) {
+    console.error('Error running testSupabase()', err);
+}
