@@ -35,7 +35,44 @@ const mechanics = [
     }
 ];
 
-function searchMechanics() {
+async function registerMechanic() {
+
+    const name = document.querySelector("#mechanic-name").value.trim();
+    const location = document.querySelector("#mechanic-location").value.trim();
+    const phone = document.querySelector("#mechanic-phone").value.trim();
+    const price = document.querySelector("#mechanic-price").value;
+    const experience = document.querySelector("#mechanic-experience").value;
+
+    if (!name || !location || !phone || !price || !experience) {
+        alert("⚠️ Please fill in all fields.");
+        return;
+    }
+
+    const { data, error } = await supabaseClient
+        .from("mechanics")
+        .insert([
+            {
+                name: name,
+                location: location,
+                phone: phone,
+                price: Number(price),
+                experience: Number(experience),
+                rating: 5.0,
+                status: "Available now"
+            }
+        ])
+        .select();
+
+    if (error) {
+        console.error(error);
+        alert("❌ Registration failed. Please try again.");
+        return;
+    }
+
+    alert(`🎉 Welcome to CARFIX, ${name}!`);
+
+    console.log("New mechanic:", data);
+}
     const location = document.querySelector("#location").value.trim();
     const car = document.querySelector("#car").value;
     const result = document.querySelector("#search-result");
