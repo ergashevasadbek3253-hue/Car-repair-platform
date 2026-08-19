@@ -33,6 +33,7 @@ const mechanics = [
         status: "Busy",
         image: "👨‍🔧"
     }
+];
 
 
 async function registerMechanic() {
