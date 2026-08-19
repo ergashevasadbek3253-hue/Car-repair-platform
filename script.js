@@ -33,54 +33,52 @@ const mechanics = [
         status: "Busy",
         image: "👨‍🔧"
     }
-];
+
 
 async function registerMechanic() {
-    const name = document.getElementById("mechanic-name")?.value?.trim();
-    const location = document.getElementById("mechanic-location")?.value?.trim();
-    // mechanic-car input is added to the registration form; fall back to Other if missing
-    const carElem = document.getElementById("mechanic-car");
-    const car = carElem ? carElem.value : "Other";
-    const price = document.getElementById("mechanic-price")?.value;
-    const experience = document.getElementById("mechanic-experience")?.value;
-    const phone = document.getElementById("mechanic-phone")?.value?.trim();
+    const name = document.getElementById("mechanic-name").value.trim();
+    const location = document.getElementById("mechanic-location").value.trim();
+    const phone = document.getElementById("mechanic-phone").value.trim();
+    const price = document.getElementById("mechanic-price").value;
+    const experience = document.getElementById("mechanic-experience").value;
 
-    if (!name || !location || !car) {
-        alert("❌ Please fill in the required fields");
+    if (!name || !location || !phone || !price || !experience) {
+        alert("⚠️ Please fill in all fields.");
         return;
     }
 
-    try {
-        const { data, error, status } = await supabaseClient
-            .from("mechanics") // ensure table name matches your Supabase table (lowercase)
-            .insert([
-                {
-                    name: name,
-                    location: location,
-                    car: car,
-                    price: Number(price) || 0,
-                    experience: Number(experience) || 0,
-                    phone: phone
-                }
-            ])
-            .select();
+    const { data, error } = await supabaseClient
+        .from("Bond")
+        .insert([
+            {
+                name: name,
+                location: location,
+                phone: phone,
+                price: Number(price),
+                experience: Number(experience),
+                rating: 5,
+                status: "Available now"
+            }
+        ])
+        .select();
 
-        if (error) {
-            console.error("Supabase insert error:", error, "status:", status);
-            alert("❌ Mechanic not saved: " + (error.message || JSON.stringify(error)));
-            return;
-        }
+    if (error) {
+        console.error(error);
 
-        alert("✅ Mechanic successfully added!");
+        alert(
+            "❌ Registration failed\n\n" +
+            error.message
+        );
 
-        console.log("New mechanic:", data);
-
-        // After successful registration, refresh the search results (if any)
-        searchMechanics();
-    } catch (err) {
-        console.error("Unexpected error inserting mechanic:", err);
-        alert("❌ Unexpected error: " + err.message);
+        return;
     }
+
+    alert(
+        `🎉 Welcome to CARFIX, ${name}!\n\n` +
+        "Your profile has been created successfully."
+    );
+
+    console.log("New mechanic:", data);
 }
 
 function searchMechanics() {
