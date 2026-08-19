@@ -73,11 +73,16 @@ async function registerMechanic() {
 
     console.log("New mechanic:", data);
 }
-    const location = document.querySelector("#location").value.trim();
-    const car = document.querySelector("#car").value;
+
+function searchMechanics() {
+    // Use a local variable name to avoid colliding with window.location
+    const loc = document.querySelector("#location")?.value?.trim() ?? "";
+    const car = document.querySelector("#car")?.value ?? "";
     const result = document.querySelector("#search-result");
 
-    if (location === "" || car === "") {
+    if (!result) return;
+
+    if (loc === "" || car === "") {
         result.innerHTML = `
             <div class="error-message">
                 ⚠️ Please enter your location and select your car.
@@ -93,7 +98,7 @@ async function registerMechanic() {
     if (matches.length === 0) {
         result.innerHTML = `
             <div class="error-message">
-                😔 No mechanics found for ${car} in ${location}.
+                😔 No mechanics found for ${car} in ${loc}.
             </div>
         `;
         return;
@@ -102,12 +107,11 @@ async function registerMechanic() {
     result.innerHTML = `
         <div class="results-header">
             <h3>🔧 Mechanics near you</h3>
-            <p>${matches.length} mechanic(s) found for ${car} in ${location}</p>
+            <p>${matches.length} mechanic(s) found for ${car} in ${loc}</p>
         </div>
 
         <div class="mechanic-results">
             ${matches.map(mechanic => {
-                // escape single quotes in names so onclick string stays valid
                 const safeName = mechanic.name.replace(/'/g, "\\'");
                 return `
                     <div class="mechanic-card">
@@ -153,12 +157,9 @@ async function registerMechanic() {
 
 function contactMechanic(name) {
     const mechanic = mechanics.find(item => item.name === name);
-
-    if (!mechanic) {
-        return;
-    }
-
+    if (!mechanic) return;
     const result = document.querySelector("#search-result");
+    if (!result) return;
 
     result.innerHTML = `
         <div class="profile-overlay">
@@ -201,13 +202,12 @@ function contactMechanic(name) {
 }
 
 function startConsultation(name) {
-    alert(
-        `Video consultation with ${name} will be available soon.`
-    );
+    alert(`Video consultation with ${name} will be available soon.`);
 }
 
 function showRegistration() {
     const result = document.querySelector("#search-result");
+    if (!result) return;
 
     result.innerHTML = `
         <div class="registration-form">
@@ -259,23 +259,6 @@ function showRegistration() {
     `;
 }
 
-function registerMechanic() {
-    const name = document.querySelector("#mechanic-name").value;
-    const location = document.querySelector("#mechanic-location").value;
-    const phone = document.querySelector("#mechanic-phone").value;
-    const price = document.querySelector("#mechanic-price").value;
-    const experience = document.querySelector("#mechanic-experience").value;
-
-    if (!name || !location || !phone || !price || !experience) {
-        alert("⚠️ Please fill in all fields.");
-        return;
-    }
-
-    alert(
-        `🎉 Welcome to CARFIX, ${name}!\n\n` +
-        `Your mechanic profile has been created.`
-    );
-}
 async function testSupabase() {
     const { data, error } = await supabaseClient
         .from("mechanics")
@@ -291,5 +274,7 @@ async function testSupabase() {
     console.log("Supabase connected:", data);
     alert("✅ Supabase muvaffaqiyatli ulandi!");
 }
+
+// keep the single async registerMechanic above (which inserts into Supabase)
 
 testSupabase();
