@@ -36,40 +36,39 @@ const mechanics = [
 ];
 
 async function registerMechanic() {
+    const name = document.getElementById("mechanic-name").value;
+    const location = document.getElementById("mechanic-location").value;
+    const car = document.getElementById("mechanic-car").value;
+    const price = document.getElementById("mechanic-price").value;
+    const experience = document.getElementById("mechanic-experience").value;
+    const phone = document.getElementById("mechanic-phone").value;
 
-    const name = document.querySelector("#mechanic-name").value.trim();
-    const location = document.querySelector("#mechanic-location").value.trim();
-    const phone = document.querySelector("#mechanic-phone").value.trim();
-    const price = document.querySelector("#mechanic-price").value;
-    const experience = document.querySelector("#mechanic-experience").value;
-
-    if (!name || !location || !phone || !price || !experience) {
-        alert("⚠️ Please fill in all fields.");
+    if (!name || !location || !car) {
+        alert("❌ Please fill in the required fields");
         return;
     }
 
     const { data, error } = await supabaseClient
-        .from("mechanics")
+        .from("Mechanic")
         .insert([
             {
                 name: name,
                 location: location,
-                phone: phone,
-                price: Number(price),
-                experience: Number(experience),
-                rating: 5.0,
-                status: "Available now"
+                car: car,
+                price: Number(price) || 0,
+                experience: Number(experience) || 0,
+                phone: phone
             }
         ])
         .select();
 
     if (error) {
         console.error(error);
-        alert("❌ Registration failed. Please try again.");
+        alert("❌ Mechanic saqlanmadi: " + error.message);
         return;
     }
 
-    alert(`🎉 Welcome to CARFIX, ${name}!`);
+    alert("✅ Mechanic muvaffaqiyatli qo‘shildi!");
 
     console.log("New mechanic:", data);
 }
