@@ -247,7 +247,110 @@ function contactMechanic(name) {
 function startConsultation(name) {
     alert(`Video consultation with ${name} will be available soon.`);
 }
+function showRequestForm(mechanicName) {
 
+    const result = document.querySelector("#search-result");
+
+    if (!result) return;
+
+    result.innerHTML = `
+        <div class="registration-form">
+
+            <button class="close-profile"
+                onclick="searchMechanics()">
+                ✕
+            </button>
+
+            <h2>🆘 Request Help</h2>
+
+            <p>
+                Request assistance from ${mechanicName}
+            </p>
+
+            <input
+                id="request-driver-name"
+                type="text"
+                placeholder="👤 Your name"
+            >
+
+            <input
+                id="request-driver-phone"
+                type="tel"
+                placeholder="📞 Phone number"
+            >
+
+            <input
+                id="request-location"
+                type="text"
+                placeholder="📍 Your current location"
+            >
+
+            <textarea
+                id="request-problem"
+                placeholder="🔧 Describe your car problem..."
+                rows="5">
+            </textarea>
+
+            <button onclick="submitRequest('${mechanicName}')">
+                🆘 Send Request
+            </button>
+
+        </div>
+    `;
+}
+async function submitRequest(mechanicName) {
+
+    const driverName =
+        document.querySelector("#request-driver-name")?.value.trim() ?? "";
+
+    const driverPhone =
+        document.querySelector("#request-driver-phone")?.value.trim() ?? "";
+
+    const location =
+        document.querySelector("#request-location")?.value.trim() ?? "";
+
+    const problem =
+        document.querySelector("#request-problem")?.value.trim() ?? "";
+
+    if (!driverName || !driverPhone || !location || !problem) {
+
+        alert("⚠️ Please fill in all fields.");
+
+        return;
+    }
+
+    const { data, error } = await supabaseClient
+        .from("Requests")
+        .insert([
+            {
+                driver_name: driverName,
+                driver_phone: driverPhone,
+                location: location,
+                problem: problem,
+                status: "Pending"
+            }
+        ])
+        .select();
+
+    if (error) {
+
+        console.error(error);
+
+        alert(
+            "❌ Request failed:\n\n" +
+            error.message
+        );
+
+        return;
+    }
+
+    alert(
+        `✅ Request sent successfully!\n\n` +
+        `Mechanic: ${mechanicName}`
+    );
+
+    console.log("New request:", data);
+}
 function showRegistration() {
     const result = document.querySelector("#search-result");
     if (!result) return;
