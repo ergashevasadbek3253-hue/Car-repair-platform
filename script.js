@@ -57,6 +57,7 @@ async function registerMechanic() {
                 phone: phone,
                 price: Number(price),
                 experience: Number(experience),
+                car: car,
                 rating: 5,
                 status: "Available now"
             }
@@ -93,7 +94,7 @@ function searchMechanics() {
     if (loc === "" || car === "") {
         result.innerHTML = `
             <div class="error-message">
-                ⚠️ Please enter your location and select your car.
+    :            ⚠️ Please enter your location and select your car.
             </div>
         `;
         return;
