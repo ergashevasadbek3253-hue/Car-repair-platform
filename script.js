@@ -297,7 +297,7 @@ async function submitRequest(mechanicName) {
             problem: problem,
             status: "Pending"
         }])
-        .select();
+        
 
     if (error) {
         console.error("Request error:", error);
