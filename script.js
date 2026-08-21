@@ -561,3 +561,6 @@ async function loadMechanicRequests() {
         </div>
     `).join("");
 }
+document.addEventListener("DOMContentLoaded", () => {
+    loadMechanicRequests();
+});
