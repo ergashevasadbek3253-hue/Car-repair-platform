@@ -5,36 +5,48 @@ const supabaseClient = supabase.createClient(
     SUPABASE_URL,
     SUPABASE_KEY
 );
+
+// Local fallback data (used if Supabase isn't reachable)
 const mechanics = [
     {
         name: "Alex",
         location: "Riga, Latvia",
+        car: "BMW",
         cars: ["BMW", "Mercedes-Benz", "Volkswagen"],
         rating: "4.9",
         price: "€15",
         status: "Available now",
-        image: "🔧"
+        image: "🔧",
+        phone: "+37100000001",
+        experience: 5
     },
     {
         name: "Mike",
         location: "Riga, Latvia",
+        car: "Toyota",
         cars: ["Toyota", "Ford", "Other"],
         rating: "4.8",
         price: "€12",
         status: "Available now",
-        image: "🧰"
+        image: "🧰",
+        phone: "+37100000002",
+        experience: 3
     },
     {
         name: "Daniel",
         location: "Riga, Latvia",
+        car: "BMW",
         cars: ["BMW", "Toyota", "Other"],
         rating: "4.7",
         price: "€10",
         status: "Busy",
-        image: "👨‍🔧"
+        image: "👨‍🔧",
+        phone: "+37100000003",
+        experience: 8
     }
 ];
 
+// Search mechanics: try Supabase first, fall back to local data if needed
 async function searchMechanics() {
     const loc = document.querySelector("#location")?.value?.trim() ?? "";
     const car = document.querySelector("#car")?.value ?? "";
@@ -51,25 +63,59 @@ async function searchMechanics() {
         return;
     }
 
-    // 🔥 Get mechanics directly from Supabase Bond table
-    const { data: matches, error } = await supabaseClient
-        .from("Bond")
-        .select("*")
-        .ilike("location", `%${loc}%`)
-        .ilike("car", car);
+    // Try Supabase table named "Bond" (this repo previously used that). Use ilike with % to match substrings.
+    try {
+        const { data: matches, error } = await supabaseClient
+            .from("Bond")
+            .select("*")
+            .ilike("location", `%${loc}%`)
+            .ilike("car", `%${car}%`);
 
-    if (error) {
-        console.error("Search error:", error);
+        if (error) {
+            console.warn("Supabase query error, falling back to local data:", error);
+            renderResults(filterLocalMechanics(loc, car), car, loc);
+            return;
+        }
 
-        result.innerHTML = `
-            <div class="error-message">
-                ❌ Failed to search mechanics.
-            </div>
-        `;
-        return;
+        if (!matches || matches.length === 0) {
+            // no rows from supabase -> fallback to local
+            renderResults(filterLocalMechanics(loc, car), car, loc);
+            return;
+        }
+
+        // We have rows from Supabase — normalize them and render
+        const normalized = matches.map(m => ({
+            name: m.name || m.full_name || "Unknown Mechanic",
+            location: m.location || "",
+            car: m.car || (m.cars && m.cars[0]) || "Any car",
+            cars: Array.isArray(m.cars) ? m.cars : (m.car ? [m.car] : []),
+            rating: m.rating ?? 5,
+            price: m.price ? (typeof m.price === 'number' ? `€${m.price}` : m.price) : "N/A",
+            status: m.status || "Available now",
+            phone: m.phone || "",
+            experience: m.experience ?? 0,
+            image: m.image || '🔧'
+        }));
+
+        renderResults(normalized, car, loc);
+    } catch (err) {
+        console.error("Unexpected error searching mechanics:", err);
+        renderResults(filterLocalMechanics(loc, car), car, loc);
     }
+}
 
-    if (!matches || matches.length === 0) {
+function filterLocalMechanics(loc, car) {
+    // very simple local filter: location substring and car in supported cars
+    return mechanics.filter(m =>
+        m.location.toLowerCase().includes(loc.toLowerCase()) && (m.car === car || m.cars.includes(car))
+    );
+}
+
+function renderResults(items, car, loc) {
+    const result = document.querySelector("#search-result");
+    if (!result) return;
+
+    if (!items || items.length === 0) {
         result.innerHTML = `
             <div class="error-message">
                 😔 No mechanics found for ${car} in ${loc}.
@@ -81,159 +127,95 @@ async function searchMechanics() {
     result.innerHTML = `
         <div class="results-header">
             <h3>🔧 Mechanics near you</h3>
-            <p>${matches.length} mechanic(s) found for ${car} in ${loc}</p>
+            <p>${items.length} mechanic(s) found for ${car} in ${loc}</p>
         </div>
 
         <div class="mechanic-results">
-
-            ${matches.map(mechanic => {
-
-                const safeName = String(mechanic.name || "")
-                    .replace(/'/g, "\\'");
-
+            ${items.map(mechanic => {
+                const safeName = String(mechanic.name || "").replace(/'/g, "\\'");
                 const rating = mechanic.rating ?? 5;
                 const price = mechanic.price ?? "N/A";
                 const status = mechanic.status || "Available now";
                 const phone = mechanic.phone || "";
+                const cars = Array.isArray(mechanic.cars) ? mechanic.cars.join(", ") : (mechanic.car || "Any car");
 
                 return `
                     <div class="mechanic-card">
 
-                        <div class="mechanic-icon">
-                            🔧
-                        </div>
+                        <div class="mechanic-icon">${mechanic.image || '🔧'}</div>
 
                         <div class="mechanic-info">
-
                             <h3>${mechanic.name || "Unknown Mechanic"}</h3>
-
                             <p>📍 ${mechanic.location || "Location not provided"}</p>
-
                             <p>⭐ ${rating}/5</p>
-
-                            <p>🚗 ${mechanic.car || "Any car"}</p>
-
-                            <p>💰 €${price} / consultation</p>
-
+                            <p>🚗 ${cars}</p>
+                            <p>💰 ${price} / consultation</p>
                             <p>🛠️ ${mechanic.experience || 0} years experience</p>
-
-                            <p class="status">
-                                ${
-                                    status === "Available now"
-                                        ? "🟢 Available now"
-                                        : "🟠 Currently busy"
-                                }
-                            </p>
-
+                            <p class="status">${status === "Available now" ? "🟢 Available now" : "🟠 Currently busy"}</p>
                         </div>
 
                         <div class="mechanic-actions">
-
-                            <button onclick="window.location.href='tel:${phone}'">
-                                📞 Contact
-                            </button>
-
-                            <button onclick="startConsultation('${safeName}')">
-                                📹 Start Video Consultation
-                            </button>
-
+                            <button onclick="window.location.href='tel:${phone}'">📞 Contact</button>
+                            <button onclick="startConsultation('${safeName}')">📹 Start Video Consultation</button>
                         </div>
 
                     </div>
                 `;
             }).join("")}
-
         </div>
     `;
 }
-async function registerMechanic() {
-    const name = document.getElementById("mechanic-name").value.trim();
-    const location = document.getElementById("mechanic-location").value.trim();
-    const phone = document.getElementById("mechanic-phone").value.trim();
-    const price = document.getElementById("mechanic-price").value;
-    const experience = document.getElementById("mechanic-experience").value;
 
-    if (!name || !location || !phone || !price || !experience) {
+// Registration: read form fields and insert into Supabase Bond table
+async function registerMechanic() {
+    const name = document.getElementById("mechanic-name")?.value?.trim();
+    const location = document.getElementById("mechanic-location")?.value?.trim();
+    const phone = document.getElementById("mechanic-phone")?.value?.trim();
+    const priceRaw = document.getElementById("mechanic-price")?.value;
+    const experienceRaw = document.getElementById("mechanic-experience")?.value;
+    const car = document.getElementById("mechanic-car")?.value;
+
+    if (!name || !location || !phone || !priceRaw || !experienceRaw || !car) {
         alert("⚠️ Please fill in all fields.");
         return;
     }
 
-    const { data, error } = await supabaseClient
-        .from("Bond")
-        .insert([
-            {
-                name: name,
-                location: location,
-                phone: phone,
-                price: Number(price),
-                experience: Number(experience),
-                car: car,
-                rating: 5,
-                status: "Available now"
-            }
-        ])
-        .select();
+    const price = Number(priceRaw);
+    const experience = Number(experienceRaw);
 
-    if (error) {
-        console.error(error);
+    // insert into Bond table
+    try {
+        const { data, error } = await supabaseClient
+            .from("Bond")
+            .insert([
+                {
+                    name: name,
+                    location: location,
+                    phone: phone,
+                    price: price,
+                    experience: experience,
+                    car: car,
+                    rating: 5,
+                    status: "Available now"
+                }
+            ])
+            .select();
 
-        alert(
-            "❌ Registration failed\n\n" +
-            error.message
-        );
+        if (error) {
+            console.error("Supabase insert error:", error);
+            alert("❌ Registration failed: " + error.message);
+            return;
+        }
 
-        return;
+        alert(`🎉 Welcome to CARFIX, ${name}! Your profile has been created successfully.`);
+        console.log("New mechanic created:", data);
+
+        // After successful registration, refresh the search results (optional)
+        searchMechanics();
+    } catch (err) {
+        console.error("Unexpected error during registration:", err);
+        alert("❌ Registration failed (unexpected error). Check console for details.");
     }
-
-    alert(
-        `🎉 Welcome to CARFIX, ${name}!\n\n` +
-        "Your profile has been created successfully."
-    );
-
-    console.log("New mechanic:", data);
-}
-
-function searchMechanics() {
-    // Use a local variable name to avoid colliding with window.location
-    const loc = document.querySelector("#location")?.value?.trim() ?? "";
-    const car = document.querySelector("#car")?.value ?? "";
-    const result = document.querySelector("#search-result");
-
-    if (!result) return;
-
-    if (loc === "" || car === "") {
-        result.innerHTML = `
-            <div class="error-message">
-    :            ⚠️ Please enter your location and select your car.
-            </div>
-        `;
-        return;
-    }
-
-    const matches = mechanics.filter(mechanic =>
-        mechanic.cars.includes(car)
-    );
-
-    if (matches.length === 0) {
-        result.innerHTML = `
-            <div class="error-message">
-                😔 No mechanics found for ${car} in ${loc}.
-            </div>
-        `;
-        return;
-    }
-
-    result.innerHTML = `
-        <div class="results-header">
-            <h3>🔧 Mechanics near you</h3>
-            <p>${matches.length} mechanic(s) found for ${car} in ${loc}</p>
-        </div>
-
-        <div class="mechanic-results">
-            ${matches.map(mechanic => {
-                const safeName = mechanic.name.replace(/'/g, "\\'");
-                return `
-                  
 }
 
 function contactMechanic(name) {
@@ -244,40 +226,20 @@ function contactMechanic(name) {
 
     result.innerHTML = `
         <div class="profile-overlay">
-
             <div class="mechanic-profile">
-
-                <button class="close-profile"
-                    onclick="searchMechanics()">
-                    ✕
-                </button>
-
-                <div class="profile-icon">
-                    ${mechanic.image}
-                </div>
-
+                <button class="close-profile" onclick="searchMechanics()">✕</button>
+                <div class="profile-icon">${mechanic.image}</div>
                 <h2>${mechanic.name}</h2>
-
                 <p class="verified">✓ Verified Mechanic</p>
-
                 <div class="profile-details">
                     <p>📍 ${mechanic.location}</p>
                     <p>⭐ ${mechanic.rating}/5 rating</p>
                     <p>🚗 ${mechanic.cars.join(", ")}</p>
                     <p>💰 ${mechanic.price} / consultation</p>
-                    <p>
-                        ${mechanic.status === "Available now"
-                            ? "🟢 Available now"
-                            : "🟠 Currently busy"}
-                    </p>
+                    <p>${mechanic.status === "Available now" ? "🟢 Available now" : "🟠 Currently busy"}</p>
                 </div>
-
-                <button onclick="startConsultation('${mechanic.name.replace(/'/g, "\\'")}')">
-                    📹 Start Video Consultation
-                </button>
-
+                <button onclick="startConsultation('${mechanic.name.replace(/'/g, "\\'")}')">📹 Start Video Consultation</button>
             </div>
-
         </div>
     `;
 }
@@ -292,34 +254,12 @@ function showRegistration() {
 
     result.innerHTML = `
         <div class="registration-form">
-
-            <button class="close-profile"
-                onclick="searchMechanics()">
-                ✕
-            </button>
-
+            <button class="close-profile" onclick="searchMechanics()">✕</button>
             <h2>🔧 Mechanic Registration</h2>
-
             <p>Join CARFIX and start helping drivers.</p>
-
-            <input
-                id="mechanic-name"
-                type="text"
-                placeholder="👤 Your name"
-            >
-
-            <input
-                id="mechanic-location"
-                type="text"
-                placeholder="📍 Your location"
-            >
-
-            <input
-                id="mechanic-phone"
-                type="tel"
-                placeholder="📞 Phone number"
-            >
-
+            <input id="mechanic-name" type="text" placeholder="👤 Your name">
+            <input id="mechanic-location" type="text" placeholder="📍 Your location">
+            <input id="mechanic-phone" type="tel" placeholder="📞 Phone number">
             <select id="mechanic-car">
                 <option value="">Select your car specialties</option>
                 <option>BMW</option>
@@ -329,49 +269,36 @@ function showRegistration() {
                 <option>Ford</option>
                 <option>Other</option>
             </select>
-
-            <input
-                id="mechanic-price"
-                type="number"
-                placeholder="💰 Consultation price (€)"
-            >
-
-            <input
-                id="mechanic-experience"
-                type="number"
-                placeholder="🛠️ Years of experience"
-            >
-
-            <button onclick="registerMechanic()">
-                Create Mechanic Profile
-            </button>
-
+            <input id="mechanic-price" type="number" placeholder="💰 Consultation price (€)">
+            <input id="mechanic-experience" type="number" placeholder="🛠️ Years of experience">
+            <button onclick="registerMechanic()">Create Mechanic Profile</button>
         </div>
     `;
 }
 
 async function testSupabase() {
-    const { data, error } = await supabaseClient
-        .from("mechanics")
-        .select("*")
-        .limit(1);
+    try {
+        const { data, error } = await supabaseClient
+            .from("Bond")
+            .select("*")
+            .limit(1);
 
-    if (error) {
-        console.error("Supabase error:", error);
-        alert("❌ Supabase connection error");
-        return;
+        if (error) {
+            console.error("Supabase error:", error);
+            // don't alert the user repeatedly in production
+            return false;
+        }
+
+        console.log("Supabase connected (Bond):", data);
+        return true;
+    } catch (err) {
+        console.error('Error testing Supabase:', err);
+        return false;
     }
-
-    console.log("Supabase connected:", data);
-    // only alert for debugging; remove in production
-    alert("✅ Supabase connected successfully!");
 }
 
-// keep the single async registerMechanic above (which inserts into Supabase)
-
-// Run a quick supabase connectivity test
-try {
-    testSupabase();
-} catch (err) {
-    console.error('Error running testSupabase()', err);
-}
+// Run a quick supabase connectivity test on load
+(async () => {
+    const ok = await testSupabase();
+    if (!ok) console.warn('Supabase not reachable — the app will use local fallback data.');
+})();
