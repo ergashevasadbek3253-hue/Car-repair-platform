@@ -35,7 +35,117 @@ const mechanics = [
     }
 ];
 
+async function searchMechanics() {
+    const loc = document.querySelector("#location")?.value?.trim() ?? "";
+    const car = document.querySelector("#car")?.value ?? "";
+    const result = document.querySelector("#search-result");
 
+    if (!result) return;
+
+    if (loc === "" || car === "") {
+        result.innerHTML = `
+            <div class="error-message">
+                ⚠️ Please enter your location and select your car.
+            </div>
+        `;
+        return;
+    }
+
+    // 🔥 Get mechanics directly from Supabase Bond table
+    const { data: matches, error } = await supabaseClient
+        .from("Bond")
+        .select("*")
+        .ilike("location", `%${loc}%`)
+        .ilike("car", car);
+
+    if (error) {
+        console.error("Search error:", error);
+
+        result.innerHTML = `
+            <div class="error-message">
+                ❌ Failed to search mechanics.
+            </div>
+        `;
+        return;
+    }
+
+    if (!matches || matches.length === 0) {
+        result.innerHTML = `
+            <div class="error-message">
+                😔 No mechanics found for ${car} in ${loc}.
+            </div>
+        `;
+        return;
+    }
+
+    result.innerHTML = `
+        <div class="results-header">
+            <h3>🔧 Mechanics near you</h3>
+            <p>${matches.length} mechanic(s) found for ${car} in ${loc}</p>
+        </div>
+
+        <div class="mechanic-results">
+
+            ${matches.map(mechanic => {
+
+                const safeName = String(mechanic.name || "")
+                    .replace(/'/g, "\\'");
+
+                const rating = mechanic.rating ?? 5;
+                const price = mechanic.price ?? "N/A";
+                const status = mechanic.status || "Available now";
+                const phone = mechanic.phone || "";
+
+                return `
+                    <div class="mechanic-card">
+
+                        <div class="mechanic-icon">
+                            🔧
+                        </div>
+
+                        <div class="mechanic-info">
+
+                            <h3>${mechanic.name || "Unknown Mechanic"}</h3>
+
+                            <p>📍 ${mechanic.location || "Location not provided"}</p>
+
+                            <p>⭐ ${rating}/5</p>
+
+                            <p>🚗 ${mechanic.car || "Any car"}</p>
+
+                            <p>💰 €${price} / consultation</p>
+
+                            <p>🛠️ ${mechanic.experience || 0} years experience</p>
+
+                            <p class="status">
+                                ${
+                                    status === "Available now"
+                                        ? "🟢 Available now"
+                                        : "🟠 Currently busy"
+                                }
+                            </p>
+
+                        </div>
+
+                        <div class="mechanic-actions">
+
+                            <button onclick="window.location.href='tel:${phone}'">
+                                📞 Contact
+                            </button>
+
+                            <button onclick="startConsultation('${safeName}')">
+                                📹 Start Video Consultation
+                            </button>
+
+                        </div>
+
+                    </div>
+                `;
+            }).join("")}
+
+        </div>
+    `;
+}
 async function registerMechanic() {
     const name = document.getElementById("mechanic-name").value.trim();
     const location = document.getElementById("mechanic-location").value.trim();
@@ -123,45 +233,7 @@ function searchMechanics() {
             ${matches.map(mechanic => {
                 const safeName = mechanic.name.replace(/'/g, "\\'");
                 return `
-                    <div class="mechanic-card">
-
-                        <div class="mechanic-icon">
-                            ${mechanic.image}
-                        </div>
-
-                        <div class="mechanic-info">
-                            <h3>${mechanic.name}</h3>
-
-                            <p>📍 ${mechanic.location}</p>
-
-                            <p>⭐ ${mechanic.rating}/5</p>
-
-                            <p>🚗 ${mechanic.cars.join(", ")}</p>
-
-                            <p>💰 ${mechanic.price} / consultation</p>
-
-                            <p class="status">
-                                ${mechanic.status === "Available now"
-                                    ? "🟢 Available now"
-                                    : "🟠 Currently busy"}
-                            </p>
-                        </div>
-
-                        <div class="mechanic-actions">
-                            <button onclick="contactMechanic('${safeName}')">
-                                📞 Contact
-                            </button>
-
-                            <button onclick="startConsultation('${safeName}')">
-                                📹 Start Video Consultation
-                            </button>
-                        </div>
-
-                    </div>
-                `;
-            }).join("")}
-        </div>
-    `;
+                  
 }
 
 function contactMechanic(name) {
