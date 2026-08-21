@@ -156,6 +156,9 @@ function renderResults(items, car, loc) {
 
                         <div class="mechanic-actions">
                             <button onclick="window.location.href='tel:${phone}'">📞 Contact</button>
+                            <button onclick="showRequestForm('${safeName}')">
+        🆘 Request Help
+    </button>
                             <button onclick="startConsultation('${safeName}')">📹 Start Video Consultation</button>
                         </div>
 
