@@ -1,3 +1,6 @@
+function openMechanicApp() {
+    window.location.href ="https://qzqibfgyqwrhjrgiyumg.supabase.co" ;
+}
 const SUPABASE_URL = "https://qzqibfgyqwrhjrgiyumg.supabase.co";
 const SUPABASE_KEY = "sb_publishable_T0ydZcimtvIMUK29FuGb2g_VX5dUmpv";
 
