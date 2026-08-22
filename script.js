@@ -1,6 +1,4 @@
-function openMechanicApp() {
-    showRegistration();
-}
+
 
 const SUPABASE_URL = "https://qzqibfgyqwrhjrgiyumg.supabase.co";
 const SUPABASE_KEY = "sb_publishable_T0ydZcimtvIMUK29FuGb2g_VX5dUmpv";
@@ -454,4 +452,6 @@ async function loadMechanicRequests() {
 
 document.addEventListener("DOMContentLoaded", () => {
     loadMechanicRequests();
-});
+});function openMechanicApp() {
+    showRegistration();
+}
