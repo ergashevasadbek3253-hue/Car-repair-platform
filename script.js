@@ -1,6 +1,7 @@
 function openMechanicApp() {
-    window.location.href ="https://qzqibfgyqwrhjrgiyumg.supabase.co" ;
+    showRegistration();
 }
+
 const SUPABASE_URL = "https://qzqibfgyqwrhjrgiyumg.supabase.co";
 const SUPABASE_KEY = "sb_publishable_T0ydZcimtvIMUK29FuGb2g_VX5dUmpv";
 
@@ -224,157 +225,7 @@ async function registerMechanic() {
     }
 }
 
-function contactMechanic(name) {
-    const mechanic = mechanics.find(item => item.name === name);
-    if (!mechanic) return;
-    const result = document.querySelector("#search-result");
-    if (!result) return;
-
-   function showRequestForm(mechanicName) {
-    const result = document.querySelector("#search-result");
-
-    if (!result) return;
-
-    result.innerHTML = `
-        <div class="registration-form">
-            <h2>🆘 Request Help</h2>
-
-            <p>Request help from <strong>${mechanicName}</strong></p>
-
-            <input
-                id="request-driver-name"
-                type="text"
-                placeholder="Your name"
-            >
-
-            <input
-                id="request-driver-phone"
-                type="tel"
-                placeholder="Phone number"
-            >
-
-            <input
-                id="request-location"
-                type="text"
-                placeholder="Your current location"
-            >
-
-            <textarea
-                id="request-problem"
-                placeholder="Describe your car problem..."
-                rows="5"
-            ></textarea>
-
-            <button onclick="submitRequest('${mechanicName}')">
-                🆘 Send Request
-            </button>
-        </div>
-    `;
-} 
-
-async function submitRequest(mechanicName) {
-
-    const driverName =
-        document.querySelector("#request-driver-name")?.value.trim() || "";
-
-    const driverPhone =
-        document.querySelector("#request-driver-phone")?.value.trim() || "";
-
-    const location =
-        document.querySelector("#request-location")?.value.trim() || "";
-
-    const problem =
-        document.querySelector("#request-problem")?.value.trim() || "";
-
-    if (!driverName || !driverPhone || !location || !problem) {
-        alert("⚠️ Please fill in all fields.");
-        return;
-    }
-
-    const { data: mechanic, error: mechanicError } =
-    await supabaseClient
-        .from("Bond")
-        .select("user_id, name")
-        .eq("name", mechanicName)
-        .single();
-
-if (mechanicError || !mechanic || !mechanic.user_id) {
-    console.error("Mechanic lookup error:", mechanicError);
-
-    alert("❌ Mechanic account information not found.");
-    return;
-}
-
-
-    const { data: mechanic, error: mechanicError } =
-    await supabaseClient
-        .from("Bond")
-        .select("user_id, name")
-        .eq("name", mechanicName)
-        .single();
-
-if (mechanicError || !mechanic || !mechanic.user_id) {
-    console.error("Mechanic lookup error:", mechanicError);
-
-    alert("❌ Mechanic account information not found.");
-    return;
-}
-
-const { data, error } = await supabaseClient
-    .from("Requests")
-    .insert([{
-        driver_name: driverName,
-        driver_phone: driverPhone,
-        location: location,
-        problem: problem,
-        status: "Pending",
-        mechanic_id: mechanic.user_id
-    }]);    
-
-    if (error) {
-        console.error("Request error:", error);
-
-        alert(
-            "❌ Request failed:\n\n" +
-            error.message
-        );
-
-        return;
-    }
-
-    alert(
-        "✅ Request sent successfully!\n\n" +
-        "Mechanic: " + mechanicName
-    );
-
-    console.log("Request created:", data);
-}
-    
-    result.innerHTML = `
-        <div class="profile-overlay">
-            <div class="mechanic-profile">
-                <button class="close-profile" onclick="searchMechanics()">✕</button>
-                <div class="profile-icon">${mechanic.image}</div>
-                <h2>${mechanic.name}</h2>
-                <p class="verified">✓ Verified Mechanic</p>
-                <div class="profile-details">
-                    <p>📍 ${mechanic.location}</p>
-                    <p>⭐ ${mechanic.rating}/5 rating</p>
-                    <p>🚗 ${mechanic.cars.join(", ")}</p>
-                    <p>💰 ${mechanic.price} / consultation</p>
-                    <p>${mechanic.status === "Available now" ? "🟢 Available now" : "🟠 Currently busy"}</p>
-                </div>
-                <button onclick="startConsultation('${mechanic.name.replace(/'/g, "\\'")}')">📹 Start Video Consultation</button>
-            </div>
-        </div>
-    `;
-}
-
-function startConsultation(name) {
-    alert(`Video consultation with ${name} will be available soon.`);
-}
 function showRequestForm(mechanicName) {
-
     const result = document.querySelector("#search-result");
 
     if (!result) return;
@@ -424,6 +275,7 @@ function showRequestForm(mechanicName) {
         </div>
     `;
 }
+
 async function submitRequest(mechanicName) {
 
     const driverName =
@@ -477,6 +329,7 @@ async function submitRequest(mechanicName) {
 
     console.log("New request:", data);
 }
+
 function showRegistration() {
     const result = document.querySelector("#search-result");
     if (!result) return;
@@ -505,6 +358,10 @@ function showRegistration() {
     `;
 }
 
+function startConsultation(name) {
+    alert(`Video consultation with ${name} will be available soon.`);
+}
+
 async function testSupabase() {
     try {
         const { data, error } = await supabaseClient
@@ -531,6 +388,7 @@ async function testSupabase() {
     const ok = await testSupabase();
     if (!ok) console.warn('Supabase not reachable — the app will use local fallback data.');
 })();
+
 async function loadMechanicRequests() {
 
     const requestList = document.querySelector("#request-list");
@@ -593,6 +451,7 @@ async function loadMechanicRequests() {
         </div>
     `).join("");
 }
+
 document.addEventListener("DOMContentLoaded", () => {
     loadMechanicRequests();
 });
