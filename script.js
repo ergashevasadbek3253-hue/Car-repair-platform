@@ -288,16 +288,45 @@ async function submitRequest(mechanicName) {
         return;
     }
 
-    const { data, error } = await supabaseClient
-        .from("Requests")
-        .insert([{
-            driver_name: driverName,
-            driver_phone: driverPhone,
-            location: location,
-            problem: problem,
-            status: "Pending"
-        }])
-        
+    const { data: mechanic, error: mechanicError } =
+    await supabaseClient
+        .from("Bond")
+        .select("user_id, name")
+        .eq("name", mechanicName)
+        .single();
+
+if (mechanicError || !mechanic || !mechanic.user_id) {
+    console.error("Mechanic lookup error:", mechanicError);
+
+    alert("❌ Mechanic account information not found.");
+    return;
+}
+
+
+    const { data: mechanic, error: mechanicError } =
+    await supabaseClient
+        .from("Bond")
+        .select("user_id, name")
+        .eq("name", mechanicName)
+        .single();
+
+if (mechanicError || !mechanic || !mechanic.user_id) {
+    console.error("Mechanic lookup error:", mechanicError);
+
+    alert("❌ Mechanic account information not found.");
+    return;
+}
+
+const { data, error } = await supabaseClient
+    .from("Requests")
+    .insert([{
+        driver_name: driverName,
+        driver_phone: driverPhone,
+        location: location,
+        problem: problem,
+        status: "Pending",
+        mechanic_id: mechanic.user_id
+    }]);    
 
     if (error) {
         console.error("Request error:", error);
